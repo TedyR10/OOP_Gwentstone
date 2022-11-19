@@ -103,79 +103,169 @@ public final class Main {
             totalGamesPlayed++;
             activePlayer1.drawCard();
             activePlayer2.drawCard();
+            ObjectNode node1 = objectMapper.createObjectNode();
+
             for (ActionsInput action : actions) {
 
+                ObjectNode node = objectMapper.createObjectNode();
+
                 if (deadHero1 && dead == 0) {
-                    System.out.println("Player two killed the enemy hero.");
+                    node1.put("gameEnded", "Player two killed the enemy hero.");
+                    output.add(node1);
                     dead = 1;
                     player2Wins++;
                 }
                 if (deadHero2 && dead == 0) {
-                    System.out.println("Player one killed the enemy hero.");
+                    node1.put("gameEnded", "Player one killed the enemy hero.");
+                    output.add(node1);
                     dead = 1;
                     player1Wins++;
                 }
 
-                ObjectNode node = objectMapper.createObjectNode();
-
                 if (Objects.equals(action.getCommand(), "getPlayerDeck")) {
-                    //node.putPOJO("command", output);
-                    System.out.println("command: " + action.getCommand());
+                    node.put("command", action.getCommand());
                     int playerIdx = action.getPlayerIdx();
-                    System.out.println("playerIdx: " + playerIdx);
+                    node.put("playerIdx", playerIdx);
 
-                    //node.putPOJO("playerIdx", playerIdx);
                     if (playerIdx == 1) {
-                        System.out.println(activePlayer1.getCurrentDeck());
+                        ArrayNode deck = objectMapper.createArrayNode();
+                        for (Card card : activePlayer1.getCurrentDeck()) {
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            if (card instanceof Minion) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("attackDamage", card.getAttackDamage());
+                                cardNode.put("health", card.getHealth());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            if (card instanceof Environment) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            deck.add(cardNode);
+                        }
+                        node.set("output", deck);
                     }
                     if (playerIdx == 2) {
-                        System.out.println(activePlayer2.getCurrentDeck());
+                        ArrayNode deck = objectMapper.createArrayNode();
+                        for (Card card : activePlayer2.getCurrentDeck()) {
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            if (card instanceof Minion) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("attackDamage", card.getAttackDamage());
+                                cardNode.put("health", card.getHealth());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            if (card instanceof Environment) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            deck.add(cardNode);
+                        }
+                        node.set("output", deck);
                     }
+                    output.add(node);
                 }
                 else if (Objects.equals(action.getCommand(), "getPlayerHero")) {
                     int playerIdx = action.getPlayerIdx();
-                    System.out.println("command: " + action.getCommand());
-                    System.out.println("playerIdx: " + playerIdx);
+                    node.put("command", action.getCommand());
+                    node.put("playerIdx", playerIdx);
 
                     //node.putPOJO("playerIdx", playerIdx);
                     if (playerIdx == 1) {
-                        System.out.println(activePlayer1.getHero());
+                        ObjectNode heroNode = objectMapper.createObjectNode();
+                        heroNode.put("mana", activePlayer1.getHero().getMana());
+                        heroNode.put("description", activePlayer1.getHero().getDescription());
+                        heroNode.putPOJO("colors", activePlayer1.getHero().getColors());
+                        heroNode.put("name", activePlayer1.getHero().getName());
+                        heroNode.put("health", activePlayer1.getHero().getHealth());
+                        node.set("output", heroNode);
                     }
-                    if (playerIdx == 2) {
-                        System.out.println(activePlayer2.getHero());
+                    else if (playerIdx == 2) {
+                        ObjectNode heroNode = objectMapper.createObjectNode();
+                        heroNode.put("mana", activePlayer2.getHero().getMana());
+                        heroNode.put("description", activePlayer2.getHero().getDescription());
+                        heroNode.putPOJO("colors", activePlayer2.getHero().getColors());
+                        heroNode.put("name", activePlayer2.getHero().getName());
+                        heroNode.put("health", activePlayer2.getHero().getHealth());
+                        node.set("output", heroNode);
                     }
+                    output.add(node);
                 }
                 else if (Objects.equals(action.getCommand(), "getPlayerTurn")) {
-                    System.out.println("command: " + action.getCommand());
+                    node.put("command", action.getCommand());
                     if (playerTurn % 2 == 0)
-                        System.out.println("2");
-                    else System.out.println("1");
+                        node.put("output", 2);
+                    else node.put("output", 1);
+                    output.add(node);
                 }
                 else if (Objects.equals(action.getCommand(), "getCardsInHand")) {
-                    System.out.println("command: " + action.getCommand());
-                    if (action.getPlayerIdx() == 2) {
-                        System.out.println("playerIdx: 2");
-                        System.out.println(activePlayer2.getHand());
+                    node.put("command", action.getCommand());
+                    node.put("playerIdx", action.getPlayerIdx());
+                    ArrayNode hand = objectMapper.createArrayNode();
+                    if (action.getPlayerIdx() == 1) {
+                        for (Card card : activePlayer1.getHand()) {
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            if (card instanceof Minion) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("attackDamage", card.getAttackDamage());
+                                cardNode.put("health", card.getHealth());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            else if (card instanceof Environment) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            hand.add(cardNode);
+                        }
                     }
                     else {
-                        System.out.println("playerIdx: 1");
-                        System.out.println(activePlayer1.getHand());
+                        for (Card card : activePlayer2.getHand()) {
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            if (card instanceof Minion) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("attackDamage", card.getAttackDamage());
+                                cardNode.put("health", card.getHealth());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            else if (card instanceof Environment) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            hand.add(cardNode);
+                        }
                     }
+                    node.set("output", hand);
+                    output.add(node);
                 }
                 else if (Objects.equals(action.getCommand(), "getPlayerMana")) {
-                    System.out.println("command: " + action.getCommand());
+                    node.put("command", action.getCommand());
+                    node.put("playerIdx", action.getPlayerIdx());
                     if (action.getPlayerIdx() == 2) {
-                        System.out.println(action.getPlayerIdx());
-                        System.out.println(activePlayer2.getMana());
+                        node.put("output", activePlayer2.getMana());
                     }
                     else {
-                        System.out.println(action.getPlayerIdx());
-                        System.out.println(activePlayer1.getMana());
+                        node.put("output", activePlayer1.getMana());
                     }
+                    output.add(node);
                 }
                 else if (Objects.equals(action.getCommand(), "endPlayerTurn")) {
                     if (!(deadHero2 || deadHero1)) {
-                        //System.out.println("command: " + action.getCommand());
                         if (playerTurn % 2 == 0) {
                             activePlayer2.setEndTurn(true);
                             if (activePlayer1.isEndTurn() && activePlayer2.isEndTurn()) {
@@ -183,24 +273,16 @@ public final class Main {
                                 activePlayer2.newTurn();
                                 activePlayer1.setEndTurn(false);
                                 activePlayer2.setEndTurn(false);
-                                for (Card card : player2Row0) {
-                                    card.setFrozen(false);
-                                    card.setHasAttacked(false);
-                                }
-                                for (Card card : player2Row1) {
-                                    card.setFrozen(false);
-                                    card.setHasAttacked(false);
-                                }
-                                for (Card card : player1Row2) {
-                                    card.setFrozen(false);
-                                    card.setHasAttacked(false);
-                                }
-                                for (Card card : player1Row3) {
-                                    card.setFrozen(false);
-                                    card.setHasAttacked(false);
-                                }
                                 activePlayer1.getHero().setHasAttacked(false);
                                 activePlayer2.getHero().setHasAttacked(false);
+                            }
+                            for (Card card : player2Row0) {
+                                card.setFrozen(false);
+                                card.setHasAttacked(false);
+                            }
+                            for (Card card : player2Row1) {
+                                card.setFrozen(false);
+                                card.setHasAttacked(false);
                             }
                         } else {
                             activePlayer1.setEndTurn(true);
@@ -209,38 +291,35 @@ public final class Main {
                                 activePlayer2.newTurn();
                                 activePlayer1.setEndTurn(false);
                                 activePlayer2.setEndTurn(false);
-                                for (Card card : player2Row0) {
-                                    card.setFrozen(false);
-                                    card.setHasAttacked(false);
-                                }
-                                for (Card card : player2Row1) {
-                                    card.setFrozen(false);
-                                    card.setHasAttacked(false);
-                                }
-                                for (Card card : player1Row2) {
-                                    card.setFrozen(false);
-                                    card.setHasAttacked(false);
-                                }
-                                for (Card card : player1Row3) {
-                                    card.setFrozen(false);
-                                    card.setHasAttacked(false);
-                                }
                                 activePlayer1.getHero().setHasAttacked(false);
                                 activePlayer2.getHero().setHasAttacked(false);
+                            }
+                            for (Card card : player1Row2) {
+                                card.setFrozen(false);
+                                card.setHasAttacked(false);
+                            }
+                            for (Card card : player1Row3) {
+                                card.setFrozen(false);
+                                card.setHasAttacked(false);
                             }
                         }
                         playerTurn++;
                     }
                 }
                 else if (Objects.equals(action.getCommand(), "placeCard")) {
-                    //System.out.println("command: " + action.getCommand());
                     int handIdx = action.getHandIdx();
                     if (playerTurn % 2 == 0) {
                         if (handIdx < activePlayer2.getHand().size()) {
                             if (activePlayer2.getHand().get(handIdx) instanceof Environment) {
-                                System.out.println("Cannot place environment card on table.");
+                                node.put("command", action.getCommand());
+                                node.put("handIdx", action.getHandIdx());
+                                node.put("error", "Cannot place environment card on table.");
+                                output.add(node);
                             } else if (activePlayer2.getHand().get(handIdx).getMana() > activePlayer2.getMana()) {
-                                System.out.println("Not enough mana to place card on table.");
+                                node.put("command", action.getCommand());
+                                node.put("handIdx", action.getHandIdx());
+                                node.put("error", "Not enough mana to place card on table.");
+                                output.add(node);
                             } else {
                                 if (activePlayer2.getHand().get(handIdx) instanceof TheRipper ||
                                         activePlayer2.getHand().get(handIdx) instanceof Miraj ||
@@ -253,7 +332,12 @@ public final class Main {
                                         activePlayer2.setMana(manaNext);
                                         activePlayer2.getHand().remove(handIdx);
                                     }
-                                    else System.out.println("Cannot place card on table since row is full.");
+                                    else {
+                                        node.put("command", action.getCommand());
+                                        node.put("handIdx", action.getHandIdx());
+                                        node.put("error", "Cannot place card on table since row is full.");
+                                        output.add(node);
+                                    }
                                 }
                                 else if (activePlayer2.getHand().get(handIdx) instanceof Sentinel ||
                                         activePlayer2.getHand().get(handIdx) instanceof Berserker ||
@@ -266,7 +350,12 @@ public final class Main {
                                         activePlayer2.setMana(manaNext);
                                         activePlayer2.getHand().remove(handIdx);
                                     }
-                                    else System.out.println("Cannot place card on table since row is full.");
+                                    else {
+                                        node.put("command", action.getCommand());
+                                        node.put("handIdx", action.getHandIdx());
+                                        node.put("error", "Cannot place card on table since row is full.");
+                                        output.add(node);
+                                    }
                                 }
                             }
                         }
@@ -274,9 +363,15 @@ public final class Main {
                     else {
                         if (handIdx < activePlayer1.getHand().size()) {
                             if (activePlayer1.getHand().get(handIdx) instanceof Environment) {
-                                System.out.println("Cannot place environment card on table.");
+                                node.put("command", action.getCommand());
+                                node.put("handIdx", action.getHandIdx());
+                                node.put("error", "Cannot place environment card on table.");
+                                output.add(node);
                             } else if (activePlayer1.getHand().get(handIdx).getMana() > activePlayer1.getMana()) {
-                                System.out.println("Not enough mana to place card on table.");
+                                node.put("command", action.getCommand());
+                                node.put("handIdx", action.getHandIdx());
+                                node.put("error", "Not enough mana to place card on table.");
+                                output.add(node);
                             } else {
                                 if (activePlayer1.getHand().get(handIdx) instanceof TheRipper ||
                                         activePlayer1.getHand().get(handIdx) instanceof Miraj ||
@@ -289,7 +384,12 @@ public final class Main {
                                         activePlayer1.setMana(manaNext);
                                         activePlayer1.getHand().remove(handIdx);
                                     }
-                                    else System.out.println("Cannot place card on table since row is full.");
+                                    else {
+                                        node.put("command", action.getCommand());
+                                        node.put("handIdx", action.getHandIdx());
+                                        node.put("error", "Cannot place card on table since row is full.");
+                                        output.add(node);
+                                    }
                                 }
                                 else if (activePlayer1.getHand().get(handIdx) instanceof Sentinel ||
                                         activePlayer1.getHand().get(handIdx) instanceof Berserker ||
@@ -303,82 +403,265 @@ public final class Main {
 
                                         activePlayer1.getHand().remove(handIdx);
                                     }
-                                    else System.out.println("Cannot place card on table since row is full.");
+                                    else {
+                                        node.put("command", action.getCommand());
+                                        node.put("handIdx", action.getHandIdx());
+                                        node.put("error", "Cannot place card on table since row is full.");
+                                        output.add(node);
+                                    }
                                 }
                             }
                         }
                     }
                 }
                 else if (Objects.equals(action.getCommand(), "getCardsOnTable")) {
-                    System.out.println("command: " + action.getCommand());
-                    ArrayList<Card> allCards = new ArrayList<Card>();
-                    allCards.addAll(player2Row0);
-                    //System.out.println("Cards on player2 table: " + player2Table);
-                    allCards.addAll(player2Row1);
-                   // System.out.println("Cards on player1 table: " + player1Table);
-                    allCards.addAll(player1Row2);
-                    //System.out.println("Cards in player 1 hand: " + activePlayer1.getHand());
-                    allCards.addAll(player1Row3);
-                    System.out.println(allCards);
+                    node.put("command", action.getCommand());
+                    ArrayNode table = objectMapper.createArrayNode();
+                    ArrayNode row0 = objectMapper.createArrayNode();
+                    ArrayNode row1 = objectMapper.createArrayNode();
+                    ArrayNode row2 = objectMapper.createArrayNode();
+                    ArrayNode row3 = objectMapper.createArrayNode();
+                    for (Card card : player2Row0) {
+                        ObjectNode cardNode = objectMapper.createObjectNode();
+                        if (card instanceof Minion) {
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("attackDamage", card.getAttackDamage());
+                            cardNode.put("health", card.getHealth());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                        }
+                        else if (card instanceof Environment) {
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                        }
+                        row0.add(cardNode);
+                    }
+                    table.add(row0);
+                    for (Card card : player2Row1) {
+                        ObjectNode cardNode = objectMapper.createObjectNode();
+                        if (card instanceof Minion) {
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("attackDamage", card.getAttackDamage());
+                            cardNode.put("health", card.getHealth());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                        }
+                        else if (card instanceof Environment) {
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                        }
+                        row1.add(cardNode);
+                    }
+                    table.add(row1);
+                    for (Card card : player1Row2) {
+                        ObjectNode cardNode = objectMapper.createObjectNode();
+                        if (card instanceof Minion) {
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("attackDamage", card.getAttackDamage());
+                            cardNode.put("health", card.getHealth());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                        }
+                        else if (card instanceof Environment) {
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                        }
+                        row2.add(cardNode);
+                    }
+                    table.add(row2);
+                    for (Card card : player1Row3) {
+                        ObjectNode cardNode = objectMapper.createObjectNode();
+                        if (card instanceof Minion) {
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("attackDamage", card.getAttackDamage());
+                            cardNode.put("health", card.getHealth());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                        }
+                        else if (card instanceof Environment) {
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                        }
+                        row3.add(cardNode);
+                    }
+                    table.add(row3);
+                    node.set("output", table);
+                    output.add(node);
                 }
                 else if (Objects.equals(action.getCommand(), "getEnvironmentCardsInHand")) {
-                    System.out.println("command: " + action.getCommand());
-                    System.out.println(action.getPlayerIdx());
-                    ArrayList<Card> envrCards = new ArrayList<Card>();
+                    node.put("command", action.getCommand());
+                    node.put("playerIdx", action.getPlayerIdx());
+                    ArrayNode envrCards = objectMapper.createArrayNode();
                     if (action.getPlayerIdx() == 1) {
                         for (Card card : activePlayer1.getHand()) {
                             if (card instanceof Environment) {
-                                envrCards.add(card);
+                                ObjectNode cardNode = objectMapper.createObjectNode();
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                                envrCards.add(cardNode);
                             }
                         }
-                        System.out.println(envrCards);
+                        node.set("output", envrCards);
+                        output.add(node);
                     }
                     else {
                         for (Card card : activePlayer2.getHand()) {
                             if (card instanceof Environment) {
-                                envrCards.add(card);
+                                ObjectNode cardNode = objectMapper.createObjectNode();
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                                envrCards.add(cardNode);
                             }
                         }
-                        System.out.println(envrCards);
+                        node.set("output", envrCards);
+                        output.add(node);
                     }
                 }
                 else if (Objects.equals(action.getCommand(), "getCardAtPosition")) {
-                    System.out.println("command: " + action.getCommand());
-                    System.out.println("x: " + action.getX());
-                    System.out.println("y: " + action.getY());
+                    node.put("command", action.getCommand());
+                    node.put("x", action.getX());
+                    node.put("y", action.getY());
                     if (action.getX() == 0) {
-                        if (action.getY() < player2Row0.size())
-                            System.out.println(player2Row0.get(action.getY()));
-                        else System.out.println("No card available at that position.");
+                        if (action.getY() < player2Row0.size()) {
+                            Card card = player2Row0.get(action.getY());
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            if (card instanceof Minion) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("attackDamage", card.getAttackDamage());
+                                cardNode.put("health", card.getHealth());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            else if (card instanceof Environment) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            node.set("output", cardNode);
+                            output.add(node);
+                        }
+                        else {
+                            node.put("output", "No card available at that position.");
+                            output.add(node);
+                        }
                     }
                     else if (action.getX() == 1) {
-                        if (action.getY() < player2Row1.size())
-                            System.out.println(player2Row1.get(action.getY()));
-                        else System.out.println("No card available at that position.");
+                        if (action.getY() < player2Row1.size()) {
+                            Card card = player2Row1.get(action.getY());
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            if (card instanceof Minion) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("attackDamage", card.getAttackDamage());
+                                cardNode.put("health", card.getHealth());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            } else if (card instanceof Environment) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            node.set("output", cardNode);
+                            output.add(node);
+                        }
+                        else {
+                            node.put("output", "No card available at that position.");
+                            output.add(node);
+                        }
                     }
                     else if (action.getX() == 2) {
-                        if (action.getY() < player1Row2.size())
-                            System.out.println(player1Row2.get(action.getY()));
-                        else System.out.println("No card available at that position.");
+                        if (action.getY() < player1Row2.size()) {
+                            Card card = player1Row2.get(action.getY());
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            if (card instanceof Minion) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("attackDamage", card.getAttackDamage());
+                                cardNode.put("health", card.getHealth());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            } else if (card instanceof Environment) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            node.set("output", cardNode);
+                            output.add(node);
+                        }
+                        else {
+                            node.put("output", "No card available at that position.");
+                            output.add(node);
+                        }
                     }
                     else if (action.getX() == 3) {
-                        if (action.getY() < player1Row3.size())
-                            System.out.println(player1Row3.get(action.getY()));
-                        else System.out.println("No card available at that position.");
+                        if (action.getY() < player1Row3.size())  {
+                            Card card = player1Row3.get(action.getY());
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            if (card instanceof Minion) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("attackDamage", card.getAttackDamage());
+                                cardNode.put("health", card.getHealth());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            } else if (card instanceof Environment) {
+                                cardNode.put("mana", card.getMana());
+                                cardNode.put("description", card.getDescription());
+                                cardNode.putPOJO("colors", card.getColors());
+                                cardNode.put("name", card.getName());
+                            }
+                            node.set("output", cardNode);
+                            output.add(node);
+                        }
+                        else {
+                            node.put("output", "No card available at that position.");
+                            output.add(node);
+                        }
                     }
                 }
                 else if (Objects.equals(action.getCommand(), "useEnvironmentCard")) {
-                    System.out.println("command: " + action.getCommand());
-                    System.out.println("handIdx: " + action.getHandIdx());
-                    System.out.println("affectedRow: " + action.getAffectedRow());
                     if (playerTurn % 2 != 0) {
                         if (!(activePlayer1.getHand().get(action.getHandIdx()) instanceof Environment)) {
-                            System.out.println("Chosen card is not of type environment.");
+                            node.put("command", action.getCommand());
+                            node.put("handIdx", action.getHandIdx());
+                            node.put("affectedRow", action.getAffectedRow());
+                            node.put("error", "Chosen card is not of type environment.");
+                            output.add(node);
                         }
-                        else if (activePlayer1.getHand().get(action.getHandIdx()).getMana() > activePlayer1.getMana())
-                            System.out.println("Not enough mana to use environment card.");
-                        else if (action.getAffectedRow() == 2 || action.getAffectedRow() == 3)
-                            System.out.println("Chosen row does not belong to the enemy.");
+                        else if (activePlayer1.getHand().get(action.getHandIdx()).getMana() > activePlayer1.getMana()) {
+                            node.put("command", action.getCommand());
+                            node.put("handIdx", action.getHandIdx());
+                            node.put("affectedRow", action.getAffectedRow());
+                            node.put("error", "Not enough mana to use environment card.");
+                            output.add(node);
+                        }
+                        else if (action.getAffectedRow() == 2 || action.getAffectedRow() == 3) {
+                            node.put("command", action.getCommand());
+                            node.put("handIdx", action.getHandIdx());
+                            node.put("affectedRow", action.getAffectedRow());
+                            node.put("error", "Chosen row does not belong to the enemy.");
+                            output.add(node);
+                        }
                         else {
                             if (Objects.equals(activePlayer1.getHand().get(action.getHandIdx()).getName(),
                                     "Firestorm")) {
@@ -466,7 +749,13 @@ public final class Main {
                                         activePlayer1.setMana(manaNext);
                                         activePlayer1.getHand().remove(action.getHandIdx());
                                     }
-                                    else System.out.println("Cannot steal enemy card since the player's row is full.");
+                                    else {
+                                        node.put("command", action.getCommand());
+                                        node.put("handIdx", action.getHandIdx());
+                                        node.put("affectedRow", action.getAffectedRow());
+                                        node.put("error", "Cannot steal enemy card since the player's row is full.");
+                                        output.add(node);
+                                    }
                                 }
                                 else if (action.getAffectedRow() == 1) {
                                     if (player1Row2.size() < 5) {
@@ -489,19 +778,36 @@ public final class Main {
                                         activePlayer1.setMana(manaNext);
                                         activePlayer1.getHand().remove(action.getHandIdx());
                                     }
-                                    else System.out.println("Cannot steal enemy card since the player's row is full.");
+                                    else {
+                                        node.put("command", action.getCommand());
+                                        node.put("handIdx", action.getHandIdx());
+                                        node.put("affectedRow", action.getAffectedRow());
+                                        node.put("error", "Cannot steal enemy card since the player's row is full.");
+                                        output.add(node);                                    }
                                 }
                             }
                         }
                     }
                     else {
                         if (!(activePlayer2.getHand().get(action.getHandIdx()) instanceof Environment)) {
-                            System.out.println("Chosen card is not of type environment.");
+                            node.put("command", action.getCommand());
+                            node.put("handIdx", action.getHandIdx());
+                            node.put("affectedRow", action.getAffectedRow());
+                            node.put("error", "Chosen card is not of type environment.");
+                            output.add(node);
                         }
-                        else if (activePlayer2.getHand().get(action.getHandIdx()).getMana() > activePlayer2.getMana())
-                            System.out.println("Not enough mana to use environment card.");
-                        else if (action.getAffectedRow() == 0 || action.getAffectedRow() == 1)
-                            System.out.println("Chosen row does not belong to the enemy.");
+                        else if (activePlayer2.getHand().get(action.getHandIdx()).getMana() > activePlayer2.getMana()) {
+                            node.put("command", action.getCommand());
+                            node.put("handIdx", action.getHandIdx());
+                            node.put("affectedRow", action.getAffectedRow());
+                            node.put("error", "Not enough mana to use environment card.");
+                            output.add(node);                        }
+                        else if (action.getAffectedRow() == 0 || action.getAffectedRow() == 1) {
+                            node.put("command", action.getCommand());
+                            node.put("handIdx", action.getHandIdx());
+                            node.put("affectedRow", action.getAffectedRow());
+                            node.put("error", "Chosen row does not belong to the enemy.");
+                            output.add(node);                        }
                         else {
                             if (Objects.equals(activePlayer2.getHand().get(action.getHandIdx()).getName(),
                                     "Firestorm")) {
@@ -589,7 +895,12 @@ public final class Main {
                                         activePlayer2.setMana(manaNext);
                                         activePlayer2.getHand().remove(action.getHandIdx());
                                     }
-                                    else System.out.println("Cannot steal enemy card since the player's row is full.");
+                                    else {
+                                        node.put("command", action.getCommand());
+                                        node.put("handIdx", action.getHandIdx());
+                                        node.put("affectedRow", action.getAffectedRow());
+                                        node.put("error", "Cannot steal enemy card since the player's row is full.");
+                                        output.add(node);                                      }
                                 }
                                 else if (action.getAffectedRow() == 3) {
                                     if (player2Row0.size() < 5) {
@@ -612,46 +923,110 @@ public final class Main {
                                         activePlayer2.setMana(manaNext);
                                         activePlayer2.getHand().remove(action.getHandIdx());
                                     }
-                                    else System.out.println("Cannot steal enemy card since the player's row is full.");
+                                    else {
+                                        node.put("command", action.getCommand());
+                                        node.put("handIdx", action.getHandIdx());
+                                        node.put("affectedRow", action.getAffectedRow());
+                                        node.put("error", "Cannot steal enemy card since the player's row is full.");
+                                        output.add(node);                                      }
                                 }
                             }
                         }
                     }
                 }
                 else if (Objects.equals(action.getCommand(), "getFrozenCardsOnTable")) {
-                    System.out.println("command: " + action.getCommand());
-                    ArrayList<Card> frozenCards = new ArrayList<Card>();
+                    node.put("command", action.getCommand());
+                    ArrayNode table = objectMapper.createArrayNode();
                     for (Card card : player2Row0)
-                        if (card.isFrozen())
-                            frozenCards.add(card);
+                        if (card.isFrozen()) {
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("attackDamage", card.getAttackDamage());
+                            cardNode.put("health", card.getHealth());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                            table.add(cardNode);
+                        }
                     for (Card card : player2Row1)
-                        if (card.isFrozen())
-                            frozenCards.add(card);
+                        if (card.isFrozen()) {
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("attackDamage", card.getAttackDamage());
+                            cardNode.put("health", card.getHealth());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                            table.add(cardNode);
+                        }
                     for (Card card : player1Row2)
-                        if (card.isFrozen())
-                            frozenCards.add(card);
+                        if (card.isFrozen()) {
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("attackDamage", card.getAttackDamage());
+                            cardNode.put("health", card.getHealth());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                            table.add(cardNode);
+                        }
                     for (Card card : player1Row3)
-                        if (card.isFrozen())
-                            frozenCards.add(card);
-                    System.out.println(frozenCards);
+                        if (card.isFrozen()) {
+                            ObjectNode cardNode = objectMapper.createObjectNode();
+                            cardNode.put("mana", card.getMana());
+                            cardNode.put("attackDamage", card.getAttackDamage());
+                            cardNode.put("health", card.getHealth());
+                            cardNode.put("description", card.getDescription());
+                            cardNode.putPOJO("colors", card.getColors());
+                            cardNode.put("name", card.getName());
+                            table.add(cardNode);
+                        }
+                    node.set("output", table);
+                    output.add(node);
                 }
                 else if (Objects.equals(action.getCommand(), "cardUsesAttack")) {
-                    System.out.println("command: " + action.getCommand());
-                    System.out.println("cardAttacker: ");
-                    System.out.println("x: " + action.getCardAttacker().getX());
-                    System.out.println("y: " + action.getCardAttacker().getY());
-                    System.out.println("cardAttacked: ");
-                    System.out.println("x: " + action.getCardAttacked().getX());
-                    System.out.println("y: " + action.getCardAttacked().getY());
+
                     if (playerTurn % 2 != 0) {
                         if (action.getCardAttacked().getX() == 2 || action.getCardAttacked().getX() == 3) {
-                            System.out.println("Attacked card does not belong to the enemy.");
+                            node.put("command", action.getCommand());
+                            ObjectNode cardAttacker = objectMapper.createObjectNode();
+                            cardAttacker.put("x", action.getCardAttacker().getX());
+                            cardAttacker.put("y", action.getCardAttacker().getY());
+                            node.set("cardAttacker", cardAttacker);
+                            ObjectNode cardAttacked = objectMapper.createObjectNode();
+                            cardAttacked.put("x", action.getCardAttacked().getX());
+                            cardAttacked.put("y", action.getCardAttacked().getY());
+                            node.set("cardAttacked", cardAttacked);
+                            node.put("error", "Attacked card does not belong to the enemy.");
+                            output.add(node);
                         }
                         else if (action.getCardAttacker().getX() == 2) {
-                            if (player1Row2.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player1Row2.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player1Row2.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player1Row2.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);
+                            }
                             else {
                                 int tank = 0;
                                 for (Card card : player2Row1) {
@@ -669,7 +1044,17 @@ public final class Main {
                                                 Objects.equals(
                                                         player2Row1.get(action.getCardAttacked().getY()).getName(),
                                                 "Warden"))) {
-                                            System.out.println("Attacked card is not of type 'Tank’.");
+                                            node.put("command", action.getCommand());
+                                            ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                            cardAttacker.put("x", action.getCardAttacker().getX());
+                                            cardAttacker.put("y", action.getCardAttacker().getY());
+                                            node.set("cardAttacker", cardAttacker);
+                                            ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                            cardAttacked.put("x", action.getCardAttacked().getX());
+                                            cardAttacked.put("y", action.getCardAttacked().getY());
+                                            node.set("cardAttacked", cardAttacked);
+                                            node.put("error", "Attacked card is not of type 'Tank'.");
+                                            output.add(node);
                                         }
                                         else {
                                             if (player2Row1.get(action.getCardAttacked().getY()).getHealth() <=
@@ -703,8 +1088,17 @@ public final class Main {
                                 }
                                 else if (action.getCardAttacked().getX() == 0) {
                                     if (tank == 1) {
-                                        System.out.println("Attacked card is not of type 'Tank’.");
-                                    }
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card is not of type 'Tank'.");
+                                        output.add(node);                                    }
                                     else {
                                         if (player2Row0.get(action.getCardAttacked().getY()).getHealth() <=
                                                 player1Row2.get(action.getCardAttacker().getY()).getAttackDamage()) {
@@ -723,10 +1117,32 @@ public final class Main {
                             }
                         }
                         else if (action.getCardAttacker().getX() == 3) {
-                            if (player1Row3.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player1Row3.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player1Row3.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player1Row3.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);
+                            }
                             else {
                                 int tank = 0;
                                 for (Card card : player2Row1) {
@@ -744,7 +1160,17 @@ public final class Main {
                                                 Objects.equals(
                                                         player2Row1.get(action.getCardAttacked().getY()).getName(),
                                                         "Warden"))) {
-                                            System.out.println("Attacked card is not of type 'Tank’.");
+                                            node.put("command", action.getCommand());
+                                            ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                            cardAttacker.put("x", action.getCardAttacker().getX());
+                                            cardAttacker.put("y", action.getCardAttacker().getY());
+                                            node.set("cardAttacker", cardAttacker);
+                                            ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                            cardAttacked.put("x", action.getCardAttacked().getX());
+                                            cardAttacked.put("y", action.getCardAttacked().getY());
+                                            node.set("cardAttacked", cardAttacked);
+                                            node.put("error", "Attacked card is not of type 'Tank'.");
+                                            output.add(node);
                                         } else {
                                             if (player2Row1.get(action.getCardAttacked().getY()).getHealth() <=
                                                     player1Row3.get(action.getCardAttacker().getY()).getAttackDamage()) {
@@ -773,7 +1199,17 @@ public final class Main {
                                     }
                                 } else if (action.getCardAttacked().getX() == 0) {
                                     if (tank == 1) {
-                                        System.out.println("Attacked card is not of type 'Tank’.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card is not of type 'Tank'.");
+                                        output.add(node);
                                     } else {
                                         if (player2Row0.get(action.getCardAttacked().getY()).getHealth() <=
                                                 player1Row3.get(action.getCardAttacker().getY()).getAttackDamage()) {
@@ -793,13 +1229,45 @@ public final class Main {
                     }
                     else {
                         if (action.getCardAttacked().getX() == 0 || action.getCardAttacked().getX() == 1) {
-                            System.out.println("Attacked card does not belong to the enemy.");
+                            node.put("command", action.getCommand());
+                            ObjectNode cardAttacker = objectMapper.createObjectNode();
+                            cardAttacker.put("x", action.getCardAttacker().getX());
+                            cardAttacker.put("y", action.getCardAttacker().getY());
+                            node.set("cardAttacker", cardAttacker);
+                            ObjectNode cardAttacked = objectMapper.createObjectNode();
+                            cardAttacked.put("x", action.getCardAttacked().getX());
+                            cardAttacked.put("y", action.getCardAttacked().getY());
+                            node.set("cardAttacked", cardAttacked);
+                            node.put("error", "Attacked card does not belong to the enemy.");
+                            output.add(node);
                         }
                         else if (action.getCardAttacker().getX() == 1) {
-                            if (player2Row1.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player2Row1.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player2Row1.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacked().getX());
+                                cardAttacker.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player2Row1.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacked().getX());
+                                cardAttacker.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);
+                            }
                             else {
                                 int tank = 0;
                                 for (Card card : player1Row2) {
@@ -817,7 +1285,17 @@ public final class Main {
                                                 Objects.equals(
                                                         player1Row2.get(action.getCardAttacked().getY()).getName(),
                                                         "Warden"))) {
-                                            System.out.println("Attacked card is not of type 'Tank’.");
+                                            node.put("command", action.getCommand());
+                                            ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                            cardAttacker.put("x", action.getCardAttacker().getX());
+                                            cardAttacker.put("y", action.getCardAttacker().getY());
+                                            node.set("cardAttacker", cardAttacker);
+                                            ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                            cardAttacker.put("x", action.getCardAttacked().getX());
+                                            cardAttacker.put("y", action.getCardAttacked().getY());
+                                            node.set("cardAttacked", cardAttacked);
+                                            node.put("error", "Attacked card is not of type 'Tank’.");
+                                            output.add(node);
                                         }
                                         else {
                                             if (player1Row2.get(action.getCardAttacked().getY()).getHealth() <=
@@ -851,8 +1329,17 @@ public final class Main {
                                 }
                                 else if (action.getCardAttacked().getX() == 3) {
                                     if (tank == 1) {
-                                        System.out.println("Attacked card is not of type 'Tank’.");
-                                    }
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacked().getX());
+                                        cardAttacker.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card is not of type 'Tank’.");
+                                        output.add(node);                                    }
                                     else {
                                         if (player1Row3.get(action.getCardAttacked().getY()).getHealth() <=
                                                 player2Row1.get(action.getCardAttacker().getY()).getAttackDamage()) {
@@ -871,10 +1358,32 @@ public final class Main {
                             }
                         }
                         else if (action.getCardAttacker().getX() == 0) {
-                            if (player2Row0.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player2Row0.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player2Row0.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player2Row0.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);
+                            }
                             else {
                                 int tank = 0;
                                 for (Card card : player1Row2) {
@@ -892,7 +1401,17 @@ public final class Main {
                                                 Objects.equals(
                                                         player1Row2.get(action.getCardAttacked().getY()).getName(),
                                                         "Warden"))) {
-                                            System.out.println("Attacked card is not of type 'Tank’.");
+                                            node.put("command", action.getCommand());
+                                            ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                            cardAttacker.put("x", action.getCardAttacker().getX());
+                                            cardAttacker.put("y", action.getCardAttacker().getY());
+                                            node.set("cardAttacker", cardAttacker);
+                                            ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                            cardAttacked.put("x", action.getCardAttacked().getX());
+                                            cardAttacked.put("y", action.getCardAttacked().getY());
+                                            node.set("cardAttacked", cardAttacked);
+                                            node.put("error", "Attacked card is not of type 'Tank'.");
+                                            output.add(node);
                                         } else {
                                             if (player1Row2.get(action.getCardAttacked().getY()).getHealth() <=
                                                     player2Row0.get(action.getCardAttacker().getY()).getAttackDamage()) {
@@ -921,7 +1440,17 @@ public final class Main {
                                     }
                                 } else if (action.getCardAttacked().getX() == 3) {
                                     if (tank == 1) {
-                                        System.out.println("Attacked card is not of type 'Tank’.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card is not of type 'Tank'.");
+                                        output.add(node);
                                     } else {
                                         if (player1Row3.get(action.getCardAttacked().getY()).getHealth() <=
                                                 player2Row0.get(action.getCardAttacker().getY()).getAttackDamage()) {
@@ -941,23 +1470,48 @@ public final class Main {
                     }
                 }
                 else if (Objects.equals(action.getCommand(), "cardUsesAbility")) {
-                    System.out.println("command: " + action.getCommand());
-                    System.out.println("cardAttacker: ");
-                    System.out.println("x: " + action.getCardAttacker().getX());
-                    System.out.println("y: " + action.getCardAttacker().getY());
-                    System.out.println("cardAttacked: ");
-                    System.out.println("x: " + action.getCardAttacked().getX());
-                    System.out.println("y: " + action.getCardAttacked().getY());
                     if (playerTurn % 2 != 0) {
                         if (action.getCardAttacker().getX() == 2) {
-                            if (player1Row2.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player1Row2.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player1Row2.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player1Row2.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);
+                            }
                             else {
                                 if (player1Row2.get(action.getCardAttacker().getY()) instanceof Disciple) {
                                     if (action.getCardAttacked().getX() == 0 || action.getCardAttacked().getX() == 1) {
-                                        System.out.println("Attacked card does not belong to the current player.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card does not belong to the current player.");
+                                        output.add(node);
                                     }
                                     else {
                                         Disciple disciple = (Disciple) player1Row2.get(action.getCardAttacker().getY());
@@ -973,7 +1527,17 @@ public final class Main {
                                 }
                                 else {
                                     if (action.getCardAttacked().getX() == 2 || action.getCardAttacked().getX() == 3) {
-                                        System.out.println("Attacked card does not belong to the enemy.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card does not belong to the enemy.");
+                                        output.add(node);
                                     }
                                     else {
                                         int tank = 0;
@@ -992,7 +1556,17 @@ public final class Main {
                                                         Objects.equals(
                                                                 player2Row1.get(action.getCardAttacked().getY()).getName(),
                                                                 "Warden"))) {
-                                                    System.out.println("Attacked card is not of type 'Tank’.");
+                                                    node.put("command", action.getCommand());
+                                                    ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                                    cardAttacker.put("x", action.getCardAttacker().getX());
+                                                    cardAttacker.put("y", action.getCardAttacker().getY());
+                                                    node.set("cardAttacker", cardAttacker);
+                                                    ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                                    cardAttacked.put("x", action.getCardAttacked().getX());
+                                                    cardAttacked.put("y", action.getCardAttacked().getY());
+                                                    node.set("cardAttacked", cardAttacked);
+                                                    node.put("error", "Attacked card is not of type 'Tank'.");
+                                                    output.add(node);
                                                 } else {
                                                     if (player1Row2.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                         TheRipper theRipper = (TheRipper) player1Row2.get(action.getCardAttacker().getY());
@@ -1033,7 +1607,17 @@ public final class Main {
                                             }
                                         } else if (action.getCardAttacked().getX() == 0) {
                                             if (tank == 1) {
-                                                System.out.println("Attacked card is not of type 'Tank’.");
+                                                node.put("command", action.getCommand());
+                                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                                node.set("cardAttacker", cardAttacker);
+                                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                                node.set("cardAttacked", cardAttacked);
+                                                node.put("error", "Attacked card is not of type 'Tank'.");
+                                                output.add(node);
                                             } else {
                                                 if (player1Row2.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player1Row2.get(action.getCardAttacker().getY());
@@ -1059,14 +1643,46 @@ public final class Main {
                             }
                         }
                         else if (action.getCardAttacker().getX() == 3) {
-                            if (player1Row3.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player1Row3.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player1Row3.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player1Row3.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);
+                            }
                             else {
                                 if (player1Row2.get(action.getCardAttacker().getY()) instanceof Disciple) {
                                     if (action.getCardAttacked().getX() == 0 || action.getCardAttacked().getX() == 1) {
-                                        System.out.println("Attacked card does not belong to the current player.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card does not belong to the current player.");
+                                        output.add(node);
                                     }
                                     else {
                                         Disciple disciple = (Disciple) player1Row2.get(action.getCardAttacker().getY());
@@ -1082,7 +1698,17 @@ public final class Main {
                                 }
                                 else {
                                     if (action.getCardAttacked().getX() == 2 || action.getCardAttacked().getX() == 3) {
-                                        System.out.println("Attacked card does not belong to the enemy.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card does not belong to the enemy.");
+                                        output.add(node);
                                     }
                                     else {
                                         int tank = 0;
@@ -1101,7 +1727,17 @@ public final class Main {
                                                         Objects.equals(
                                                                 player2Row1.get(action.getCardAttacked().getY()).getName(),
                                                                 "Warden"))) {
-                                                    System.out.println("Attacked card is not of type 'Tank’.");
+                                                    node.put("command", action.getCommand());
+                                                    ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                                    cardAttacker.put("x", action.getCardAttacker().getX());
+                                                    cardAttacker.put("y", action.getCardAttacker().getY());
+                                                    node.set("cardAttacker", cardAttacker);
+                                                    ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                                    cardAttacked.put("x", action.getCardAttacked().getX());
+                                                    cardAttacked.put("y", action.getCardAttacked().getY());
+                                                    node.set("cardAttacked", cardAttacked);
+                                                    node.put("error", "Attacked card is not of type 'Tank'.");
+                                                    output.add(node);
                                                 } else {
                                                     if (player1Row3.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                         TheRipper theRipper = (TheRipper) player1Row3.get(action.getCardAttacker().getY());
@@ -1142,7 +1778,17 @@ public final class Main {
                                             }
                                         } else if (action.getCardAttacked().getX() == 0) {
                                             if (tank == 1) {
-                                                System.out.println("Attacked card is not of type 'Tank’.");
+                                                node.put("command", action.getCommand());
+                                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                                node.set("cardAttacker", cardAttacker);
+                                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                                node.set("cardAttacked", cardAttacked);
+                                                node.put("error", "Attacked card is not of type 'Tank'.");
+                                                output.add(node);
                                             } else {
                                                 if (player1Row3.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player1Row3.get(action.getCardAttacker().getY());
@@ -1170,14 +1816,46 @@ public final class Main {
                     }
                     else {
                         if (action.getCardAttacker().getX() == 1) {
-                            if (player2Row1.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player2Row1.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player2Row1.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player2Row1.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);
+                            }
                             else {
                                 if (player2Row1.get(action.getCardAttacker().getY()) instanceof Disciple) {
                                     if (action.getCardAttacked().getX() == 2 || action.getCardAttacked().getX() == 3) {
-                                        System.out.println("Attacked card does not belong to the current player.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card does not belong to the current player.");
+                                        output.add(node);
                                     }
                                     else {
                                         Disciple disciple = (Disciple) player2Row1.get(action.getCardAttacker().getY());
@@ -1193,8 +1871,17 @@ public final class Main {
                                 }
                                 else {
                                     if (action.getCardAttacked().getX() == 0 || action.getCardAttacked().getX() == 1) {
-                                        System.out.println("Attacked card does not belong to the enemy.");
-                                    }
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card does not belong to the enemy.");
+                                        output.add(node);                                    }
                                     else {
                                         int tank = 0;
                                         for (Card card : player1Row2) {
@@ -1212,7 +1899,17 @@ public final class Main {
                                                         Objects.equals(
                                                                 player1Row2.get(action.getCardAttacked().getY()).getName(),
                                                                 "Warden"))) {
-                                                    System.out.println("Attacked card is not of type 'Tank’.");
+                                                    node.put("command", action.getCommand());
+                                                    ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                                    cardAttacker.put("x", action.getCardAttacker().getX());
+                                                    cardAttacker.put("y", action.getCardAttacker().getY());
+                                                    node.set("cardAttacker", cardAttacker);
+                                                    ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                                    cardAttacked.put("x", action.getCardAttacked().getX());
+                                                    cardAttacked.put("y", action.getCardAttacked().getY());
+                                                    node.set("cardAttacked", cardAttacked);
+                                                    node.put("error", "Attacked card is not of type 'Tank'.");
+                                                    output.add(node);
                                                 } else {
                                                     if (player2Row1.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                         TheRipper theRipper = (TheRipper) player2Row1.get(action.getCardAttacker().getY());
@@ -1254,8 +1951,17 @@ public final class Main {
                                             }
                                         } else if (action.getCardAttacked().getX() == 3) {
                                             if (tank == 1) {
-                                                System.out.println("Attacked card is not of type 'Tank’.");
-                                            } else {
+                                                node.put("command", action.getCommand());
+                                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                                node.set("cardAttacker", cardAttacker);
+                                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                                node.set("cardAttacked", cardAttacked);
+                                                node.put("error", "Attacked card is not of type 'Tank'.");
+                                                output.add(node);                                            } else {
                                                 if (player2Row1.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player2Row1.get(action.getCardAttacker().getY());
                                                     theRipper.action((Minion) player1Row3.get(action.getCardAttacked().getY()));
@@ -1280,14 +1986,46 @@ public final class Main {
                             }
                         }
                         else if (action.getCardAttacker().getX() == 0) {
-                            if (player2Row0.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player2Row0.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player2Row0.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player2Row0.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                node.set("cardAttacked", cardAttacked);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);
+                            }
                             else {
                                 if (player2Row0.get(action.getCardAttacker().getY()) instanceof Disciple) {
                                     if (action.getCardAttacked().getX() == 2 || action.getCardAttacked().getX() == 3) {
-                                        System.out.println("Attacked card does not belong to the current player.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card does not belong to the current player.");
+                                        output.add(node);
                                     }
                                     else {
                                         Disciple disciple = (Disciple) player2Row0.get(action.getCardAttacker().getY());
@@ -1303,7 +2041,17 @@ public final class Main {
                                 }
                                 else {
                                     if (action.getCardAttacked().getX() == 0 || action.getCardAttacked().getX() == 1) {
-                                        System.out.println("Attacked card does not belong to the enemy.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                        cardAttacked.put("x", action.getCardAttacked().getX());
+                                        cardAttacked.put("y", action.getCardAttacked().getY());
+                                        node.set("cardAttacked", cardAttacked);
+                                        node.put("error", "Attacked card does not belong to the enemy.");
+                                        output.add(node);
                                     }
                                     else {
                                         int tank = 0;
@@ -1322,7 +2070,17 @@ public final class Main {
                                                         Objects.equals(
                                                                 player1Row2.get(action.getCardAttacked().getY()).getName(),
                                                                 "Warden"))) {
-                                                    System.out.println("Attacked card is not of type 'Tank’.");
+                                                    node.put("command", action.getCommand());
+                                                    ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                                    cardAttacker.put("x", action.getCardAttacker().getX());
+                                                    cardAttacker.put("y", action.getCardAttacker().getY());
+                                                    node.set("cardAttacker", cardAttacker);
+                                                    ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                                    cardAttacked.put("x", action.getCardAttacked().getX());
+                                                    cardAttacked.put("y", action.getCardAttacked().getY());
+                                                    node.set("cardAttacked", cardAttacked);
+                                                    node.put("error", "Attacked card is not of type 'Tank'.");
+                                                    output.add(node);
                                                 } else {
                                                     if (player2Row0.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                         TheRipper theRipper = (TheRipper) player2Row0.get(action.getCardAttacker().getY());
@@ -1363,7 +2121,17 @@ public final class Main {
                                             }
                                         } else if (action.getCardAttacked().getX() == 3) {
                                             if (tank == 1) {
-                                                System.out.println("Attacked card is not of type 'Tank’.");
+                                                node.put("command", action.getCommand());
+                                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                                node.set("cardAttacker", cardAttacker);
+                                                ObjectNode cardAttacked = objectMapper.createObjectNode();
+                                                cardAttacked.put("x", action.getCardAttacked().getX());
+                                                cardAttacked.put("y", action.getCardAttacked().getY());
+                                                node.set("cardAttacked", cardAttacked);
+                                                node.put("error", "Attacked card is not of type 'Tank'.");
+                                                output.add(node);
                                             } else {
                                                 if (player2Row0.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player2Row0.get(action.getCardAttacker().getY());
@@ -1391,23 +2159,39 @@ public final class Main {
                     }
                 }
                 else if (Objects.equals(action.getCommand(), "useAttackHero")) {
-                    System.out.println("command: " + action.getCommand());
-                    System.out.println("cardAttacker: ");
-                    System.out.println("x: " + action.getCardAttacker().getX());
-                    System.out.println("y: " + action.getCardAttacker().getY());
                     if (playerTurn % 2 != 0) {
                         if (action.getCardAttacker().getX() == 2) {
-                            if (player1Row2.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player1Row2.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player1Row2.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player1Row2.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);
+                            }
                             else {
                                 int tank = 0;
                                 for (Card card : player2Row1) {
                                     if (Objects.equals(card.getName(), "Goliath") || Objects.equals(card.getName(),
                                             "Warden")) {
                                         tank = 1;
-                                        System.out.println("Attacked card is not of type 'Tank’.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        node.put("error", "Attacked card is not of type 'Tank'.");
+                                        output.add(node);
                                         break;
                                     }
                                 }
@@ -1422,17 +2206,36 @@ public final class Main {
                             }
                         }
                         else if (action.getCardAttacker().getX() == 3) {
-                            if (player1Row3.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player1Row3.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player1Row3.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player1Row3.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);                            }
                             else {
                                 int tank = 0;
                                 for (Card card : player2Row1) {
                                     if (Objects.equals(card.getName(), "Goliath") || Objects.equals(card.getName(),
                                             "Warden")) {
                                         tank = 1;
-                                        System.out.println("Attacked card is not of type 'Tank’.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        node.put("error", "Attacked card is not of type 'Tank'.");
+                                        output.add(node);
                                         break;
                                     }
                                 }
@@ -1449,17 +2252,37 @@ public final class Main {
                     }
                     else {
                         if (action.getCardAttacker().getX() == 1) {
-                            if (player2Row1.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player2Row1.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player2Row1.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player2Row1.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);
+                            }
                             else {
                                 int tank = 0;
                                 for (Card card : player1Row2) {
                                     if (Objects.equals(card.getName(), "Goliath") || Objects.equals(card.getName(),
                                             "Warden")) {
                                         tank = 1;
-                                        System.out.println("Attacked card is not of type 'Tank’.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        node.put("error", "Attacked card is not of type 'Tank'.");
+                                        output.add(node);
                                         break;
                                     }
                                 }
@@ -1474,17 +2297,36 @@ public final class Main {
                             }
                         }
                         else if (action.getCardAttacker().getX() == 0) {
-                            if (player2Row0.get(action.getCardAttacker().getY()).isFrozen())
-                                System.out.println("Attacker card is frozen.");
-                            else if (player2Row0.get(action.getCardAttacker().getY()).isHasAttacked())
-                                System.out.println("Attacker card has already attacked this turn.");
+                            if (player2Row0.get(action.getCardAttacker().getY()).isFrozen()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                node.put("error", "Attacker card is frozen.");
+                                output.add(node);
+                            }
+                            else if (player2Row0.get(action.getCardAttacker().getY()).isHasAttacked()) {
+                                node.put("command", action.getCommand());
+                                ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                cardAttacker.put("x", action.getCardAttacker().getX());
+                                cardAttacker.put("y", action.getCardAttacker().getY());
+                                node.set("cardAttacker", cardAttacker);
+                                node.put("error", "Attacker card has already attacked this turn.");
+                                output.add(node);                            }
                             else {
                                 int tank = 0;
                                 for (Card card : player1Row2) {
                                     if (Objects.equals(card.getName(), "Goliath") || Objects.equals(card.getName(),
                                             "Warden")) {
                                         tank = 1;
-                                        System.out.println("Attacked card is not of type 'Tank’.");
+                                        node.put("command", action.getCommand());
+                                        ObjectNode cardAttacker = objectMapper.createObjectNode();
+                                        cardAttacker.put("x", action.getCardAttacker().getX());
+                                        cardAttacker.put("y", action.getCardAttacker().getY());
+                                        node.set("cardAttacker", cardAttacker);
+                                        node.put("error", "Attacked card is not of type 'Tank'.");
+                                        output.add(node);
                                         break;
                                     }
                                 }
@@ -1501,19 +2343,28 @@ public final class Main {
                     }
                 }
                 else if (Objects.equals(action.getCommand(), "useHeroAbility")) {
-                    System.out.println("command: " + action.getCommand());
                     if (playerTurn % 2 != 0) {
                         if (activePlayer1.getHero().getMana() > activePlayer1.getMana()) {
-                            System.out.println("Not enough mana to use hero's ability.");
+                            node.put("command", action.getCommand());
+                            node.put("affectedRow", action.getAffectedRow());
+                            node.put("error", "Not enough mana to use hero's ability.");
+                            output.add(node);
                         }
                         else if (activePlayer1.getHero().isHasAttacked()) {
-                            System.out.println("Hero has already attacked this turn.");
+                            node.put("command", action.getCommand());
+                            node.put("affectedRow", action.getAffectedRow());
+                            node.put("error", "Hero has already attacked this turn.");
+                            output.add(node);
                         }
                         else {
                             if (Objects.equals(activePlayer1.getHero().getName(), "Lord Royce") ||
                                     Objects.equals(activePlayer1.getHero().getName(), "Empress Thorina")) {
-                                if (action.getAffectedRow() == 2 || action.getAffectedRow() == 3)
-                                    System.out.println("Selected row does not belong to the enemy.");
+                                if (action.getAffectedRow() == 2 || action.getAffectedRow() == 3) {
+                                    node.put("command", action.getCommand());
+                                    node.put("affectedRow", action.getAffectedRow());
+                                    node.put("error", "Selected row does not belong to the enemy.");
+                                    output.add(node);
+                                }
                                 else {
                                     if (Objects.equals(activePlayer1.getHero().getName(), "Lord Royce")) {
                                         String targetCard = "";
@@ -1599,8 +2450,12 @@ public final class Main {
                             }
                             if (Objects.equals(activePlayer1.getHero().getName(), "King Mudface") ||
                                     Objects.equals(activePlayer1.getHero().getName(), "General Kocioraw")) {
-                                if (action.getAffectedRow() == 0 || action.getAffectedRow() == 1)
-                                    System.out.println("Selected row does not belong to the current player.");
+                                if (action.getAffectedRow() == 0 || action.getAffectedRow() == 1) {
+                                    node.put("command", action.getCommand());
+                                    node.put("affectedRow", action.getAffectedRow());
+                                    node.put("error", "Selected row does not belong to the current player.");
+                                    output.add(node);
+                                }
                                 else {
                                     if (Objects.equals(activePlayer1.getHero().getName(), "King Mudface")) {
                                         if (action.getAffectedRow() == 2) {
@@ -1640,16 +2495,26 @@ public final class Main {
                     }
                     else {
                         if (activePlayer2.getHero().getMana() > activePlayer2.getMana()) {
-                            System.out.println("Not enough mana to use hero's ability.");
+                            node.put("command", action.getCommand());
+                            node.put("affectedRow", action.getAffectedRow());
+                            node.put("error", "Not enough mana to use hero's ability.");
+                            output.add(node);
                         }
                         else if (activePlayer2.getHero().isHasAttacked()) {
-                            System.out.println("Hero has already attacked this turn.");
+                            node.put("command", action.getCommand());
+                            node.put("affectedRow", action.getAffectedRow());
+                            node.put("error", "Hero has already attacked this turn.");
+                            output.add(node);
                         }
                         else {
                             if (Objects.equals(activePlayer2.getHero().getName(), "Lord Royce") ||
                                     Objects.equals(activePlayer2.getHero().getName(), "Empress Thorina")) {
-                                if (action.getAffectedRow() == 0 || action.getAffectedRow() == 1)
-                                    System.out.println("Selected row does not belong to the enemy.");
+                                if (action.getAffectedRow() == 0 || action.getAffectedRow() == 1) {
+                                    node.put("command", action.getCommand());
+                                    node.put("affectedRow", action.getAffectedRow());
+                                    node.put("error", "Selected row does not belong to the enemy.");
+                                    output.add(node);
+                                }
                                 else {
                                     if (Objects.equals(activePlayer2.getHero().getName(), "Lord Royce")) {
                                         String targetCard = "";
@@ -1735,8 +2600,12 @@ public final class Main {
                             }
                             if (Objects.equals(activePlayer2.getHero().getName(), "King Mudface") ||
                                     Objects.equals(activePlayer2.getHero().getName(), "General Kocioraw")) {
-                                if (action.getAffectedRow() == 2 || action.getAffectedRow() == 3)
-                                    System.out.println("Selected row does not belong to the current player.");
+                                if (action.getAffectedRow() == 2 || action.getAffectedRow() == 3) {
+                                    node.put("command", action.getCommand());
+                                    node.put("affectedRow", action.getAffectedRow());
+                                    node.put("error", "Selected row does not belong to the current player.");
+                                    output.add(node);
+                                }
                                 else {
                                     if (Objects.equals(activePlayer2.getHero().getName(), "King Mudface")) {
                                         if (action.getAffectedRow() == 0) {
@@ -1776,16 +2645,20 @@ public final class Main {
                     }
                 }
                 else if (Objects.equals(action.getCommand(), "getPlayerOneWins")) {
-                    System.out.println("command: " + action.getCommand());
-                    System.out.println(player1Wins);
+                    node.put("command", action.getCommand());
+                    node.put("output", player1Wins);
+                    output.add(node);
+
                 }
                 else if (Objects.equals(action.getCommand(), "getPlayerTwoWins")) {
-                    System.out.println("command: " + action.getCommand());
-                    System.out.println(player2Wins);
+                    node.put("command", action.getCommand());
+                    node.put("output", player2Wins);
+                    output.add(node);
                 }
                 else if (Objects.equals(action.getCommand(), "getTotalGamesPlayed")) {
-                    System.out.println("command: " + action.getCommand());
-                    System.out.println(totalGamesPlayed);
+                    node.put("command", action.getCommand());
+                    node.put("output", totalGamesPlayed);
+                    output.add(node);
                 }
             }
         }
