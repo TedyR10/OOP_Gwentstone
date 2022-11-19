@@ -77,6 +77,11 @@ public final class Main {
 
         Player startingPlayer1 = new Player(inputData, 1);
         Player startingPlayer2 = new Player(inputData, 2);
+        int player1Wins = 0;
+        int player2Wins = 0;
+        int totalGamesPlayed = 0;
+
+
 
         for (int i = 0; i < inputData.getGames().size(); i++) {
             Game gameInput = new Game(inputData.getGames().get(i));
@@ -90,10 +95,26 @@ public final class Main {
             ArrayList<Card> player2Row0 = new ArrayList<Card>();
             ArrayList<Card> player2Row1 = new ArrayList<Card>();
 
+            boolean deadHero1 = false;
+            boolean deadHero2 = false;
+            int dead = 0;
+
             int playerTurn = gameInput.getStartingPlayer();
+            totalGamesPlayed++;
             activePlayer1.drawCard();
             activePlayer2.drawCard();
             for (ActionsInput action : actions) {
+
+                if (deadHero1 && dead == 0) {
+                    System.out.println("Player two killed the enemy hero.");
+                    dead = 1;
+                    player2Wins++;
+                }
+                if (deadHero2 && dead == 0) {
+                    System.out.println("Player one killed the enemy hero.");
+                    dead = 1;
+                    player1Wins++;
+                }
 
                 ObjectNode node = objectMapper.createObjectNode();
 
@@ -111,7 +132,6 @@ public final class Main {
                         System.out.println(activePlayer2.getCurrentDeck());
                     }
                 }
-
                 else if (Objects.equals(action.getCommand(), "getPlayerHero")) {
                     int playerIdx = action.getPlayerIdx();
                     System.out.println("command: " + action.getCommand());
@@ -154,53 +174,66 @@ public final class Main {
                     }
                 }
                 else if (Objects.equals(action.getCommand(), "endPlayerTurn")) {
-                    System.out.println("command: " + action.getCommand());
-                    if (playerTurn % 2 == 0) {
-                        activePlayer2.setEndTurn(true);
-                        if (activePlayer1.isEndTurn() && activePlayer2.isEndTurn()) {
-                            activePlayer1.newTurn();
-                            activePlayer2.newTurn();
-                            activePlayer1.setEndTurn(false);
-                            activePlayer2.setEndTurn(false);
+                    if (!(deadHero2 || deadHero1)) {
+                        //System.out.println("command: " + action.getCommand());
+                        if (playerTurn % 2 == 0) {
+                            activePlayer2.setEndTurn(true);
+                            if (activePlayer1.isEndTurn() && activePlayer2.isEndTurn()) {
+                                activePlayer1.newTurn();
+                                activePlayer2.newTurn();
+                                activePlayer1.setEndTurn(false);
+                                activePlayer2.setEndTurn(false);
+                                for (Card card : player2Row0) {
+                                    card.setFrozen(false);
+                                    card.setHasAttacked(false);
+                                }
+                                for (Card card : player2Row1) {
+                                    card.setFrozen(false);
+                                    card.setHasAttacked(false);
+                                }
+                                for (Card card : player1Row2) {
+                                    card.setFrozen(false);
+                                    card.setHasAttacked(false);
+                                }
+                                for (Card card : player1Row3) {
+                                    card.setFrozen(false);
+                                    card.setHasAttacked(false);
+                                }
+                                activePlayer1.getHero().setHasAttacked(false);
+                                activePlayer2.getHero().setHasAttacked(false);
+                            }
+                        } else {
+                            activePlayer1.setEndTurn(true);
+                            if (activePlayer1.isEndTurn() && activePlayer2.isEndTurn()) {
+                                activePlayer1.newTurn();
+                                activePlayer2.newTurn();
+                                activePlayer1.setEndTurn(false);
+                                activePlayer2.setEndTurn(false);
+                                for (Card card : player2Row0) {
+                                    card.setFrozen(false);
+                                    card.setHasAttacked(false);
+                                }
+                                for (Card card : player2Row1) {
+                                    card.setFrozen(false);
+                                    card.setHasAttacked(false);
+                                }
+                                for (Card card : player1Row2) {
+                                    card.setFrozen(false);
+                                    card.setHasAttacked(false);
+                                }
+                                for (Card card : player1Row3) {
+                                    card.setFrozen(false);
+                                    card.setHasAttacked(false);
+                                }
+                                activePlayer1.getHero().setHasAttacked(false);
+                                activePlayer2.getHero().setHasAttacked(false);
+                            }
                         }
-                        for (Card card : player2Row0) {
-                            if (card.isFrozen())
-                                card.setFrozen(false);
-                            if (card.isHasAttacked())
-                                card.setHasAttacked(false);
-                        }
-                        for (Card card : player2Row1) {
-                            if (card.isFrozen())
-                                card.setFrozen(false);
-                            if (card.isHasAttacked())
-                                card.setHasAttacked(false);
-                        }
+                        playerTurn++;
                     }
-                    else {
-                        activePlayer1.setEndTurn(true);
-                        if (activePlayer1.isEndTurn() && activePlayer2.isEndTurn()) {
-                            activePlayer1.newTurn();
-                            activePlayer2.newTurn();
-                            activePlayer1.setEndTurn(false);
-                            activePlayer2.setEndTurn(false);
-                        }
-                        for (Card card : player1Row2) {
-                            if (card.isFrozen())
-                                card.setFrozen(false);
-                            if (card.isHasAttacked())
-                                card.setHasAttacked(false);
-                        }
-                        for (Card card : player1Row3) {
-                            if (card.isFrozen())
-                                card.setFrozen(false);
-                            if (card.isHasAttacked())
-                                card.setHasAttacked(false);
-                        }
-                    }
-                    playerTurn++;
                 }
                 else if (Objects.equals(action.getCommand(), "placeCard")) {
-                    System.out.println("command: " + action.getCommand());
+                    //System.out.println("command: " + action.getCommand());
                     int handIdx = action.getHandIdx();
                     if (playerTurn % 2 == 0) {
                         if (handIdx < activePlayer2.getHand().size()) {
@@ -218,8 +251,6 @@ public final class Main {
                                         int previousMana = activePlayer2.getMana();
                                         int manaNext = previousMana - activePlayer2.getHand().get(handIdx).getMana();
                                         activePlayer2.setMana(manaNext);
-                                        System.out.println("Player 2 placed a card worth " + activePlayer2.getHand().get(handIdx).getMana()
-                                                + " mana. Remaining mana: " + activePlayer2.getMana());
                                         activePlayer2.getHand().remove(handIdx);
                                     }
                                     else System.out.println("Cannot place card on table since row is full.");
@@ -233,8 +264,6 @@ public final class Main {
                                         int previousMana = activePlayer2.getMana();
                                         int manaNext = previousMana - activePlayer2.getHand().get(handIdx).getMana();
                                         activePlayer2.setMana(manaNext);
-                                        System.out.println("Player 2 placed a card worth " + activePlayer2.getHand().get(handIdx).getMana()
-                                                + " mana. Remaining mana: " + activePlayer2.getMana());
                                         activePlayer2.getHand().remove(handIdx);
                                     }
                                     else System.out.println("Cannot place card on table since row is full.");
@@ -258,8 +287,6 @@ public final class Main {
                                         int previousMana = activePlayer1.getMana();
                                         int manaNext = previousMana - activePlayer1.getHand().get(handIdx).getMana();
                                         activePlayer1.setMana(manaNext);
-                                        System.out.println("Player 1 placed a card worth " + activePlayer1.getHand().get(handIdx).getMana()
-                                                + " mana. Remaining mana: " + activePlayer1.getMana());
                                         activePlayer1.getHand().remove(handIdx);
                                     }
                                     else System.out.println("Cannot place card on table since row is full.");
@@ -273,8 +300,7 @@ public final class Main {
                                         int previousMana = activePlayer1.getMana();
                                         int manaNext = previousMana - activePlayer1.getHand().get(handIdx).getMana();
                                         activePlayer1.setMana(manaNext);
-                                        System.out.println("Player 1 placed a card worth " + activePlayer1.getHand().get(handIdx).getMana()
-                                                + " mana. Remaining mana: " + activePlayer1.getMana());
+
                                         activePlayer1.getHand().remove(handIdx);
                                     }
                                     else System.out.println("Cannot place card on table since row is full.");
@@ -1012,16 +1038,19 @@ public final class Main {
                                                 if (player1Row2.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player1Row2.get(action.getCardAttacker().getY());
                                                     theRipper.action((Minion) player2Row0.get(action.getCardAttacked().getY()));
+                                                    player1Row2.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player1Row2.get(action.getCardAttacker().getY()) instanceof Miraj) {
                                                     Miraj miraj = (Miraj) player1Row2.get(action.getCardAttacker().getY());
                                                     miraj.action((Minion) player2Row0.get(action.getCardAttacked().getY()));
+                                                    player1Row2.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player1Row2.get(action.getCardAttacker().getY()) instanceof TheCursedOne) {
                                                     TheCursedOne theCursedOne = (TheCursedOne) player1Row2.get(action.getCardAttacker().getY());
                                                     theCursedOne.action((Minion) player2Row0.get(action.getCardAttacked().getY()));
                                                     if (player2Row0.get(action.getCardAttacked().getY()).getHealth() == 0)
                                                         player2Row0.remove(action.getCardAttacked().getY());
+                                                    player1Row2.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                             }
                                         }
@@ -1043,9 +1072,11 @@ public final class Main {
                                         Disciple disciple = (Disciple) player1Row2.get(action.getCardAttacker().getY());
                                         if (action.getCardAttacked().getX() == 2) {
                                             disciple.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
+                                            player1Row2.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                         }
                                         else {
                                             disciple.action((Minion) player1Row3.get(action.getCardAttacked().getY()));
+                                            player1Row2.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                         }
                                     }
                                 }
@@ -1075,32 +1106,38 @@ public final class Main {
                                                     if (player1Row3.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                         TheRipper theRipper = (TheRipper) player1Row3.get(action.getCardAttacker().getY());
                                                         theRipper.action((Minion) player2Row1.get(action.getCardAttacked().getY()));
+                                                        player1Row3.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                     }
                                                     else if (player1Row3.get(action.getCardAttacker().getY()) instanceof Miraj) {
                                                         Miraj miraj = (Miraj) player1Row3.get(action.getCardAttacker().getY());
                                                         miraj.action((Minion) player2Row1.get(action.getCardAttacked().getY()));
+                                                        player1Row3.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                     }
                                                     else if (player1Row3.get(action.getCardAttacker().getY()) instanceof TheCursedOne) {
                                                         TheCursedOne theCursedOne = (TheCursedOne) player1Row3.get(action.getCardAttacker().getY());
                                                         theCursedOne.action((Minion) player2Row1.get(action.getCardAttacked().getY()));
                                                         if (player2Row1.get(action.getCardAttacked().getY()).getHealth() == 0)
                                                             player2Row1.remove(action.getCardAttacked().getY());
+                                                        player1Row3.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                     }
                                                 }
                                             } else {
                                                 if (player1Row3.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player1Row3.get(action.getCardAttacker().getY());
                                                     theRipper.action((Minion) player2Row1.get(action.getCardAttacked().getY()));
+                                                    player1Row3.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player1Row3.get(action.getCardAttacker().getY()) instanceof Miraj) {
                                                     Miraj miraj = (Miraj) player1Row3.get(action.getCardAttacker().getY());
                                                     miraj.action((Minion) player2Row1.get(action.getCardAttacked().getY()));
+                                                    player1Row3.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player1Row3.get(action.getCardAttacker().getY()) instanceof TheCursedOne) {
                                                     TheCursedOne theCursedOne = (TheCursedOne) player1Row3.get(action.getCardAttacker().getY());
                                                     theCursedOne.action((Minion) player2Row1.get(action.getCardAttacked().getY()));
                                                     if (player2Row1.get(action.getCardAttacked().getY()).getHealth() == 0)
                                                         player2Row1.remove(action.getCardAttacked().getY());
+                                                    player1Row3.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                             }
                                         } else if (action.getCardAttacked().getX() == 0) {
@@ -1110,16 +1147,19 @@ public final class Main {
                                                 if (player1Row3.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player1Row3.get(action.getCardAttacker().getY());
                                                     theRipper.action((Minion) player2Row0.get(action.getCardAttacked().getY()));
+                                                    player1Row3.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player1Row3.get(action.getCardAttacker().getY()) instanceof Miraj) {
                                                     Miraj miraj = (Miraj) player1Row3.get(action.getCardAttacker().getY());
                                                     miraj.action((Minion) player2Row0.get(action.getCardAttacked().getY()));
+                                                    player1Row3.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player1Row3.get(action.getCardAttacker().getY()) instanceof TheCursedOne) {
                                                     TheCursedOne theCursedOne = (TheCursedOne) player1Row3.get(action.getCardAttacker().getY());
                                                     theCursedOne.action((Minion) player2Row0.get(action.getCardAttacked().getY()));
                                                     if (player2Row0.get(action.getCardAttacked().getY()).getHealth() == 0)
                                                         player2Row0.remove(action.getCardAttacked().getY());
+                                                    player1Row3.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                             }
                                         }
@@ -1143,9 +1183,11 @@ public final class Main {
                                         Disciple disciple = (Disciple) player2Row1.get(action.getCardAttacker().getY());
                                         if (action.getCardAttacked().getX() == 1) {
                                             disciple.action((Minion) player2Row1.get(action.getCardAttacked().getY()));
+                                            player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                         }
                                         else {
                                             disciple.action((Minion) player2Row0.get(action.getCardAttacked().getY()));
+                                            player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                         }
                                     }
                                 }
@@ -1175,32 +1217,39 @@ public final class Main {
                                                     if (player2Row1.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                         TheRipper theRipper = (TheRipper) player2Row1.get(action.getCardAttacker().getY());
                                                         theRipper.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
+                                                        player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                     }
                                                     else if (player2Row1.get(action.getCardAttacker().getY()) instanceof Miraj) {
                                                         Miraj miraj = (Miraj) player2Row1.get(action.getCardAttacker().getY());
                                                         miraj.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
+                                                        player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                     }
                                                     else if (player2Row1.get(action.getCardAttacker().getY()) instanceof TheCursedOne) {
                                                         TheCursedOne theCursedOne = (TheCursedOne) player2Row1.get(action.getCardAttacker().getY());
                                                         theCursedOne.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
                                                         if (player1Row2.get(action.getCardAttacked().getY()).getHealth() == 0)
                                                             player1Row2.remove(action.getCardAttacked().getY());
+                                                        player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                     }
                                                 }
                                             } else {
                                                 if (player2Row1.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player2Row1.get(action.getCardAttacker().getY());
                                                     theRipper.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
+                                                    player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player2Row1.get(action.getCardAttacker().getY()) instanceof Miraj) {
                                                     Miraj miraj = (Miraj) player2Row1.get(action.getCardAttacker().getY());
                                                     miraj.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
+                                                    player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player2Row1.get(action.getCardAttacker().getY()) instanceof TheCursedOne) {
                                                     TheCursedOne theCursedOne = (TheCursedOne) player2Row1.get(action.getCardAttacker().getY());
                                                     theCursedOne.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
                                                     if (player1Row2.get(action.getCardAttacked().getY()).getHealth() == 0)
                                                         player1Row2.remove(action.getCardAttacked().getY());
+                                                    player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
+
                                                 }
                                             }
                                         } else if (action.getCardAttacked().getX() == 3) {
@@ -1210,16 +1259,19 @@ public final class Main {
                                                 if (player2Row1.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player2Row1.get(action.getCardAttacker().getY());
                                                     theRipper.action((Minion) player1Row3.get(action.getCardAttacked().getY()));
+                                                    player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player2Row1.get(action.getCardAttacker().getY()) instanceof Miraj) {
                                                     Miraj miraj = (Miraj) player2Row1.get(action.getCardAttacker().getY());
                                                     miraj.action((Minion) player1Row3.get(action.getCardAttacked().getY()));
+                                                    player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player2Row1.get(action.getCardAttacker().getY()) instanceof TheCursedOne) {
                                                     TheCursedOne theCursedOne = (TheCursedOne) player2Row1.get(action.getCardAttacker().getY());
                                                     theCursedOne.action((Minion) player1Row3.get(action.getCardAttacked().getY()));
                                                     if (player1Row3.get(action.getCardAttacked().getY()).getHealth() == 0)
                                                         player1Row3.remove(action.getCardAttacked().getY());
+                                                    player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                             }
                                         }
@@ -1241,9 +1293,11 @@ public final class Main {
                                         Disciple disciple = (Disciple) player2Row0.get(action.getCardAttacker().getY());
                                         if (action.getCardAttacked().getX() == 1) {
                                             disciple.action((Minion) player2Row1.get(action.getCardAttacked().getY()));
+                                            player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                         }
                                         else {
                                             disciple.action((Minion) player2Row0.get(action.getCardAttacked().getY()));
+                                            player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                         }
                                     }
                                 }
@@ -1273,32 +1327,38 @@ public final class Main {
                                                     if (player2Row0.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                         TheRipper theRipper = (TheRipper) player2Row0.get(action.getCardAttacker().getY());
                                                         theRipper.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
+                                                        player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                     }
                                                     else if (player2Row0.get(action.getCardAttacker().getY()) instanceof Miraj) {
                                                         Miraj miraj = (Miraj) player2Row0.get(action.getCardAttacker().getY());
                                                         miraj.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
+                                                        player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                     }
                                                     else if (player2Row0.get(action.getCardAttacker().getY()) instanceof TheCursedOne) {
                                                         TheCursedOne theCursedOne = (TheCursedOne) player2Row0.get(action.getCardAttacker().getY());
                                                         theCursedOne.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
                                                         if (player1Row2.get(action.getCardAttacked().getY()).getHealth() == 0)
                                                             player1Row2.remove(action.getCardAttacked().getY());
+                                                        player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                     }
                                                 }
                                             } else {
                                                 if (player2Row0.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player2Row0.get(action.getCardAttacker().getY());
                                                     theRipper.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
+                                                    player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player2Row0.get(action.getCardAttacker().getY()) instanceof Miraj) {
                                                     Miraj miraj = (Miraj) player2Row0.get(action.getCardAttacker().getY());
                                                     miraj.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
+                                                    player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player2Row0.get(action.getCardAttacker().getY()) instanceof TheCursedOne) {
                                                     TheCursedOne theCursedOne = (TheCursedOne) player2Row0.get(action.getCardAttacker().getY());
                                                     theCursedOne.action((Minion) player1Row2.get(action.getCardAttacked().getY()));
                                                     if (player1Row2.get(action.getCardAttacked().getY()).getHealth() == 0)
                                                         player1Row2.remove(action.getCardAttacked().getY());
+                                                    player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                             }
                                         } else if (action.getCardAttacked().getX() == 3) {
@@ -1308,16 +1368,19 @@ public final class Main {
                                                 if (player2Row0.get(action.getCardAttacker().getY()) instanceof TheRipper) {
                                                     TheRipper theRipper = (TheRipper) player2Row0.get(action.getCardAttacker().getY());
                                                     theRipper.action((Minion) player1Row3.get(action.getCardAttacked().getY()));
+                                                    player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player2Row0.get(action.getCardAttacker().getY()) instanceof Miraj) {
                                                     Miraj miraj = (Miraj) player2Row0.get(action.getCardAttacker().getY());
                                                     miraj.action((Minion) player1Row3.get(action.getCardAttacked().getY()));
+                                                    player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                                 else if (player2Row0.get(action.getCardAttacker().getY()) instanceof TheCursedOne) {
                                                     TheCursedOne theCursedOne = (TheCursedOne) player2Row0.get(action.getCardAttacker().getY());
                                                     theCursedOne.action((Minion) player1Row3.get(action.getCardAttacked().getY()));
                                                     if (player1Row3.get(action.getCardAttacked().getY()).getHealth() == 0)
                                                         player1Row3.remove(action.getCardAttacked().getY());
+                                                    player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
                                                 }
                                             }
                                         }
@@ -1326,6 +1389,403 @@ public final class Main {
                             }
                         }
                     }
+                }
+                else if (Objects.equals(action.getCommand(), "useAttackHero")) {
+                    System.out.println("command: " + action.getCommand());
+                    System.out.println("cardAttacker: ");
+                    System.out.println("x: " + action.getCardAttacker().getX());
+                    System.out.println("y: " + action.getCardAttacker().getY());
+                    if (playerTurn % 2 != 0) {
+                        if (action.getCardAttacker().getX() == 2) {
+                            if (player1Row2.get(action.getCardAttacker().getY()).isFrozen())
+                                System.out.println("Attacker card is frozen.");
+                            else if (player1Row2.get(action.getCardAttacker().getY()).isHasAttacked())
+                                System.out.println("Attacker card has already attacked this turn.");
+                            else {
+                                int tank = 0;
+                                for (Card card : player2Row1) {
+                                    if (Objects.equals(card.getName(), "Goliath") || Objects.equals(card.getName(),
+                                            "Warden")) {
+                                        tank = 1;
+                                        System.out.println("Attacked card is not of type 'Tank’.");
+                                        break;
+                                    }
+                                }
+                                if (tank == 0) {
+                                    activePlayer2.getHero().setHealth(activePlayer2.getHero().getHealth() -
+                                            player1Row2.get(action.getCardAttacker().getY()).getAttackDamage());
+                                    if (activePlayer2.getHero().getHealth() <= 0) {
+                                        deadHero2 = true;
+                                    }
+                                    player1Row2.get(action.getCardAttacker().getY()).setHasAttacked(true);
+                                }
+                            }
+                        }
+                        else if (action.getCardAttacker().getX() == 3) {
+                            if (player1Row3.get(action.getCardAttacker().getY()).isFrozen())
+                                System.out.println("Attacker card is frozen.");
+                            else if (player1Row3.get(action.getCardAttacker().getY()).isHasAttacked())
+                                System.out.println("Attacker card has already attacked this turn.");
+                            else {
+                                int tank = 0;
+                                for (Card card : player2Row1) {
+                                    if (Objects.equals(card.getName(), "Goliath") || Objects.equals(card.getName(),
+                                            "Warden")) {
+                                        tank = 1;
+                                        System.out.println("Attacked card is not of type 'Tank’.");
+                                        break;
+                                    }
+                                }
+                                if (tank == 0) {
+                                    activePlayer2.getHero().setHealth(activePlayer2.getHero().getHealth() -
+                                            player1Row3.get(action.getCardAttacker().getY()).getAttackDamage());
+                                    if (activePlayer2.getHero().getHealth() <= 0) {
+                                        deadHero2 = true;
+                                    }
+                                    player1Row3.get(action.getCardAttacker().getY()).setHasAttacked(true);
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        if (action.getCardAttacker().getX() == 1) {
+                            if (player2Row1.get(action.getCardAttacker().getY()).isFrozen())
+                                System.out.println("Attacker card is frozen.");
+                            else if (player2Row1.get(action.getCardAttacker().getY()).isHasAttacked())
+                                System.out.println("Attacker card has already attacked this turn.");
+                            else {
+                                int tank = 0;
+                                for (Card card : player1Row2) {
+                                    if (Objects.equals(card.getName(), "Goliath") || Objects.equals(card.getName(),
+                                            "Warden")) {
+                                        tank = 1;
+                                        System.out.println("Attacked card is not of type 'Tank’.");
+                                        break;
+                                    }
+                                }
+                                if (tank == 0) {
+                                    activePlayer1.getHero().setHealth(activePlayer1.getHero().getHealth() -
+                                            player2Row1.get(action.getCardAttacker().getY()).getAttackDamage());
+                                    if (activePlayer1.getHero().getHealth() <= 0) {
+                                        deadHero1 = true;
+                                    }
+                                    player2Row1.get(action.getCardAttacker().getY()).setHasAttacked(true);
+                                }
+                            }
+                        }
+                        else if (action.getCardAttacker().getX() == 0) {
+                            if (player2Row0.get(action.getCardAttacker().getY()).isFrozen())
+                                System.out.println("Attacker card is frozen.");
+                            else if (player2Row0.get(action.getCardAttacker().getY()).isHasAttacked())
+                                System.out.println("Attacker card has already attacked this turn.");
+                            else {
+                                int tank = 0;
+                                for (Card card : player1Row2) {
+                                    if (Objects.equals(card.getName(), "Goliath") || Objects.equals(card.getName(),
+                                            "Warden")) {
+                                        tank = 1;
+                                        System.out.println("Attacked card is not of type 'Tank’.");
+                                        break;
+                                    }
+                                }
+                                if (tank == 0) {
+                                    activePlayer1.getHero().setHealth(activePlayer1.getHero().getHealth() -
+                                            player2Row0.get(action.getCardAttacker().getY()).getAttackDamage());
+                                    if (activePlayer1.getHero().getHealth() <= 0) {
+                                        deadHero1 = true;
+                                    }
+                                    player2Row0.get(action.getCardAttacker().getY()).setHasAttacked(true);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (Objects.equals(action.getCommand(), "useHeroAbility")) {
+                    System.out.println("command: " + action.getCommand());
+                    if (playerTurn % 2 != 0) {
+                        if (activePlayer1.getHero().getMana() > activePlayer1.getMana()) {
+                            System.out.println("Not enough mana to use hero's ability.");
+                        }
+                        else if (activePlayer1.getHero().isHasAttacked()) {
+                            System.out.println("Hero has already attacked this turn.");
+                        }
+                        else {
+                            if (Objects.equals(activePlayer1.getHero().getName(), "Lord Royce") ||
+                                    Objects.equals(activePlayer1.getHero().getName(), "Empress Thorina")) {
+                                if (action.getAffectedRow() == 2 || action.getAffectedRow() == 3)
+                                    System.out.println("Selected row does not belong to the enemy.");
+                                else {
+                                    if (Objects.equals(activePlayer1.getHero().getName(), "Lord Royce")) {
+                                        String targetCard = "";
+                                        int maxAttack = -1;
+                                        if (action.getAffectedRow() == 0) {
+                                            for (Card card : player2Row0) {
+                                                if (card.getAttackDamage() > maxAttack) {
+                                                    maxAttack = card.getAttackDamage();
+                                                    targetCard = card.getName();
+                                                }
+                                            }
+                                            for (Card card : player2Row0) {
+                                                if (Objects.equals(card.getName(), targetCard) &&
+                                                        card.getAttackDamage() == maxAttack) {
+                                                    card.setFrozen(true);
+                                                    activePlayer1.getHero().setHasAttacked(true);
+                                                    activePlayer1.setMana(activePlayer1.getMana() -
+                                                            activePlayer1.getHero().getMana());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (action.getAffectedRow() == 1) {
+                                            for (Card card : player2Row1) {
+                                                if (card.getAttackDamage() > maxAttack) {
+                                                    maxAttack = card.getAttackDamage();
+                                                    targetCard = card.getName();
+                                                }
+                                            }
+                                            for (Card card : player2Row1) {
+                                                if (Objects.equals(card.getName(), targetCard) &&
+                                                        card.getAttackDamage() == maxAttack) {
+                                                    card.setFrozen(true);
+                                                    activePlayer1.getHero().setHasAttacked(true);
+                                                    activePlayer1.setMana(activePlayer1.getMana() -
+                                                            activePlayer1.getHero().getMana());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (Objects.equals(activePlayer1.getHero().getName(), "Empress Thorina")) {
+                                        String targetCard = new String();
+                                        int maxHealth = 0;
+                                        if (action.getAffectedRow() == 0) {
+                                            for (Card card : player2Row0) {
+                                                if (card.getHealth() > maxHealth) {
+                                                    maxHealth = card.getHealth();
+                                                    targetCard = card.getName();
+                                                }
+                                            }
+                                            for (Card card : player2Row0) {
+                                                if (Objects.equals(card.getName(), targetCard) &&
+                                                        card.getHealth() == maxHealth) {
+                                                    player2Row0.remove(card);
+                                                    activePlayer1.getHero().setHasAttacked(true);
+                                                    activePlayer1.setMana(activePlayer1.getMana() -
+                                                            activePlayer1.getHero().getMana());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (action.getAffectedRow() == 1) {
+                                            for (Card card : player2Row1) {
+                                                if (card.getHealth() > maxHealth) {
+                                                    maxHealth = card.getHealth();
+                                                    targetCard = card.getName();
+                                                }
+                                            }
+                                            for (Card card : player2Row1) {
+                                                if (Objects.equals(card.getName(), targetCard) &&
+                                                        card.getHealth() == maxHealth) {
+                                                    player2Row1.remove(card);
+                                                    activePlayer1.getHero().setHasAttacked(true);
+                                                    activePlayer1.setMana(activePlayer1.getMana() -
+                                                            activePlayer1.getHero().getMana());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (Objects.equals(activePlayer1.getHero().getName(), "King Mudface") ||
+                                    Objects.equals(activePlayer1.getHero().getName(), "General Kocioraw")) {
+                                if (action.getAffectedRow() == 0 || action.getAffectedRow() == 1)
+                                    System.out.println("Selected row does not belong to the current player.");
+                                else {
+                                    if (Objects.equals(activePlayer1.getHero().getName(), "King Mudface")) {
+                                        if (action.getAffectedRow() == 2) {
+                                            for (Card card : player1Row2)
+                                               card.setHealth(card.getHealth() + 1);
+                                            activePlayer1.getHero().setHasAttacked(true);
+                                            activePlayer1.setMana(activePlayer1.getMana() -
+                                                    activePlayer1.getHero().getMana());
+                                        }
+                                        if (action.getAffectedRow() == 3) {
+                                            for (Card card : player1Row3)
+                                                card.setHealth(card.getHealth() + 1);
+                                            activePlayer1.getHero().setHasAttacked(true);
+                                            activePlayer1.setMana(activePlayer1.getMana() -
+                                                    activePlayer1.getHero().getMana());
+                                        }
+                                    }
+                                    if (Objects.equals(activePlayer1.getHero().getName(), "General Kocioraw")) {
+                                        if (action.getAffectedRow() == 2) {
+                                            for (Card card : player1Row2)
+                                                card.setAttackDamage(card.getAttackDamage() + 1);
+                                            activePlayer1.getHero().setHasAttacked(true);
+                                            activePlayer1.setMana(activePlayer1.getMana() -
+                                                    activePlayer1.getHero().getMana());
+                                        }
+                                        if (action.getAffectedRow() == 3) {
+                                            for (Card card : player1Row3)
+                                                card.setAttackDamage(card.getAttackDamage() + 1);
+                                            activePlayer1.getHero().setHasAttacked(true);
+                                            activePlayer1.setMana(activePlayer1.getMana() -
+                                                    activePlayer1.getHero().getMana());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        if (activePlayer2.getHero().getMana() > activePlayer2.getMana()) {
+                            System.out.println("Not enough mana to use hero's ability.");
+                        }
+                        else if (activePlayer2.getHero().isHasAttacked()) {
+                            System.out.println("Hero has already attacked this turn.");
+                        }
+                        else {
+                            if (Objects.equals(activePlayer2.getHero().getName(), "Lord Royce") ||
+                                    Objects.equals(activePlayer2.getHero().getName(), "Empress Thorina")) {
+                                if (action.getAffectedRow() == 0 || action.getAffectedRow() == 1)
+                                    System.out.println("Selected row does not belong to the enemy.");
+                                else {
+                                    if (Objects.equals(activePlayer2.getHero().getName(), "Lord Royce")) {
+                                        String targetCard = "";
+                                        int maxAttack = -1;
+                                        if (action.getAffectedRow() == 2) {
+                                            for (Card card : player1Row2) {
+                                                if (card.getAttackDamage() > maxAttack) {
+                                                    maxAttack = card.getAttackDamage();
+                                                    targetCard = card.getName();
+                                                }
+                                            }
+                                            for (Card card : player1Row2) {
+                                                if (Objects.equals(card.getName(), targetCard) &&
+                                                        card.getAttackDamage() == maxAttack) {
+                                                    card.setFrozen(true);
+                                                    activePlayer2.getHero().setHasAttacked(true);
+                                                    activePlayer2.setMana(activePlayer2.getMana() -
+                                                            activePlayer2.getHero().getMana());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (action.getAffectedRow() == 3) {
+                                            for (Card card : player1Row3) {
+                                                if (card.getAttackDamage() > maxAttack) {
+                                                    maxAttack = card.getAttackDamage();
+                                                    targetCard = card.getName();
+                                                }
+                                            }
+                                            for (Card card : player1Row3) {
+                                                if (Objects.equals(card.getName(), targetCard) &&
+                                                        card.getAttackDamage() == maxAttack) {
+                                                    card.setFrozen(true);
+                                                    activePlayer2.getHero().setHasAttacked(true);
+                                                    activePlayer2.setMana(activePlayer2.getMana() -
+                                                            activePlayer2.getHero().getMana());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (Objects.equals(activePlayer2.getHero().getName(), "Empress Thorina")) {
+                                        String targetCard = new String();
+                                        int maxHealth = 0;
+                                        if (action.getAffectedRow() == 2) {
+                                            for (Card card : player1Row2) {
+                                                if (card.getHealth() > maxHealth) {
+                                                    maxHealth = card.getHealth();
+                                                    targetCard = card.getName();
+                                                }
+                                            }
+                                            for (Card card : player1Row2) {
+                                                if (Objects.equals(card.getName(), targetCard) &&
+                                                        card.getHealth() == maxHealth) {
+                                                    player1Row2.remove(card);
+                                                    activePlayer2.getHero().setHasAttacked(true);
+                                                    activePlayer2.setMana(activePlayer2.getMana() -
+                                                            activePlayer2.getHero().getMana());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (action.getAffectedRow() == 3) {
+                                            for (Card card : player1Row3) {
+                                                if (card.getHealth() > maxHealth) {
+                                                    maxHealth = card.getHealth();
+                                                    targetCard = card.getName();
+                                                }
+                                            }
+                                            for (Card card : player1Row3) {
+                                                if (Objects.equals(card.getName(), targetCard) &&
+                                                        card.getHealth() == maxHealth) {
+                                                    player1Row3.remove(card);
+                                                    activePlayer2.getHero().setHasAttacked(true);
+                                                    activePlayer2.setMana(activePlayer2.getMana() -
+                                                            activePlayer2.getHero().getMana());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (Objects.equals(activePlayer2.getHero().getName(), "King Mudface") ||
+                                    Objects.equals(activePlayer2.getHero().getName(), "General Kocioraw")) {
+                                if (action.getAffectedRow() == 2 || action.getAffectedRow() == 3)
+                                    System.out.println("Selected row does not belong to the current player.");
+                                else {
+                                    if (Objects.equals(activePlayer2.getHero().getName(), "King Mudface")) {
+                                        if (action.getAffectedRow() == 0) {
+                                            for (Card card : player2Row0)
+                                                card.setHealth(card.getHealth() + 1);
+                                            activePlayer2.getHero().setHasAttacked(true);
+                                            activePlayer2.setMana(activePlayer2.getMana() -
+                                                    activePlayer2.getHero().getMana());
+                                        }
+                                        if (action.getAffectedRow() == 1) {
+                                            for (Card card : player2Row1)
+                                                card.setHealth(card.getHealth() + 1);
+                                            activePlayer2.getHero().setHasAttacked(true);
+                                            activePlayer2.setMana(activePlayer2.getMana() -
+                                                    activePlayer2.getHero().getMana());
+                                        }
+                                    }
+                                    if (Objects.equals(activePlayer2.getHero().getName(), "General Kocioraw")) {
+                                        if (action.getAffectedRow() == 0) {
+                                            for (Card card : player2Row0)
+                                                card.setAttackDamage(card.getAttackDamage() + 1);
+                                            activePlayer2.getHero().setHasAttacked(true);
+                                            activePlayer2.setMana(activePlayer2.getMana() -
+                                                    activePlayer2.getHero().getMana());
+                                        }
+                                        if (action.getAffectedRow() == 1) {
+                                            for (Card card : player2Row1)
+                                                card.setAttackDamage(card.getAttackDamage() + 1);
+                                            activePlayer2.getHero().setHasAttacked(true);
+                                            activePlayer2.setMana(activePlayer2.getMana() -
+                                                    activePlayer2.getHero().getMana());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (Objects.equals(action.getCommand(), "getPlayerOneWins")) {
+                    System.out.println("command: " + action.getCommand());
+                    System.out.println(player1Wins);
+                }
+                else if (Objects.equals(action.getCommand(), "getPlayerTwoWins")) {
+                    System.out.println("command: " + action.getCommand());
+                    System.out.println(player2Wins);
+                }
+                else if (Objects.equals(action.getCommand(), "getTotalGamesPlayed")) {
+                    System.out.println("command: " + action.getCommand());
+                    System.out.println(totalGamesPlayed);
                 }
             }
         }

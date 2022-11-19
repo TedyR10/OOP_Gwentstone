@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public class Hero extends Minion {
     private int mana;
-    private final int health = 30;
+    private int health = 30;
     private String description;
     private ArrayList<String> colors;
     private String name;
@@ -20,6 +20,11 @@ public class Hero extends Minion {
     @Override
     public void setHasAttacked(boolean hasAttacked) {
         this.hasAttacked = hasAttacked;
+    }
+
+    @Override
+    public void setHealth(int health) {
+        this.health = health;
     }
 
     @Override

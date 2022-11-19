@@ -30,6 +30,26 @@ public class Minion extends Card {
 
     }
 
+    @Override
+    public boolean isHasAttacked() {
+        return hasAttacked;
+    }
+
+    @Override
+    public void setHasAttacked(boolean hasAttacked) {
+        this.hasAttacked = hasAttacked;
+    }
+
+    @Override
+    public boolean isFrozen() {
+        return frozen;
+    }
+
+    @Override
+    public void setFrozen(boolean frozen) {
+        this.frozen = frozen;
+    }
+
     public int getMana() {
         return mana;
     }
